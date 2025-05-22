@@ -1,0 +1,110 @@
+You're given:
+
+An integer array nums of size n.
+
+A list of queries, each query is [li, ri] meaning:
+
+You can reduce each element from index li to ri by at most 1.
+
+Key Point to be remembered:
+
+To reduce each element nums[i] to zero, you must have at least nums[i] operations covering index i.
+
+So, for each index i, count how many times it is covered by the queries.
+
+If an index is covered less than nums[i] times → not possible → return -1.
+
+Then, try to remove as many queries as possible, without violating the rule above.
+
+Solution (1) 704/824 Test Cases approved:
+
+import java.util.*;
+
+class Solution {
+    public int maxRemoval(int[] nums, int[][] queries) {
+        int n = nums.length;
+        int[] freq = new int[n]; 
+        //Counting coverage of each index
+        for (int[] q : queries){
+            for(int i = q[0]; i <=q[1]; i++){
+                freq[i]++;
+            }
+        }
+
+        //To check if the nums[i] > freq[i] = impossible.
+        for(int i = 0; i < n; i++){
+            if(nums[i] > freq[i]){
+                return -1;
+            }
+        }
+        //greedy removal of queries
+        int removable = 0;
+
+        for(int[] q : queries){
+            boolean cR = true;
+
+            for(int i = q[0]; i <= q[1]; i++){
+                if(nums[i] > freq[i] - 1){
+                    cR = false;
+                    break;
+                }
+            }
+            if(cR){
+                removable++;
+                for(int i = q[0]; i <=q[1]; i++){
+                    freq[i]--;
+                }
+            }
+        }
+        return removable;
+    }
+}
+
+
+
+Really bad Question, Really bad logic applied, I hate myself:
+
+Solution by ChatGPT & another dude:
+
+import java.util.*;
+
+class Solution {
+    public int maxRemoval(int[] nums, int[][] queries) {
+        Arrays.sort(queries, (a, b) -> Integer.compare(a[0], b[0]));  // sort by start
+
+        PriorityQueue<Integer> candidate = new PriorityQueue<>(Collections.reverseOrder()); // max heap for end
+        PriorityQueue<Integer> chosen = new PriorityQueue<>(); // min heap for used queries
+        int ans = 0, n = nums.length;
+        int j = 0;
+
+        for (int i = 0; i < n; i++) {
+            // Push all queries starting at this index into candidate
+            while (j < queries.length && queries[j][0] == i) {
+                candidate.add(queries[j][1]);
+                j++;
+            }
+
+            nums[i] -= chosen.size(); // previously selected queries reduce current index
+
+            // While we still need to reduce nums[i]
+            while (nums[i] > 0 && !candidate.isEmpty() && candidate.peek() >= i) {
+                ans++;
+                chosen.add(candidate.poll());
+                nums[i]--;
+            }
+
+            // If after all effort nums[i] > 0, it's impossible
+            if (nums[i] > 0) return -1;
+
+            // Remove queries that expire at current index
+            while (!chosen.isEmpty() && chosen.peek() == i) {
+                chosen.poll();
+            }
+        }
+
+        return queries.length - ans;
+    }
+}
+
+
+
