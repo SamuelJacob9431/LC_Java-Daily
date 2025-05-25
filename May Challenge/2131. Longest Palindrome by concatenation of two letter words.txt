@@ -1,0 +1,46 @@
+2131. Longest Palindrome by concatenating two letter words
+
+Q.You are given an array of strings words. Each element of words consists of two lowercase English letters.
+
+Create the longest possible palindrome by selecting some elements from words and concatenating them in any order. Each element can be selected at most once.
+
+Return the length of the longest palindrome that you can create. If it is impossible to create any palindrome, return 0.
+
+A palindrome is a string that reads the same forward and backward eg. MALAYALAM
+
+Solution:
+Using a Hash Map to store the Palindrome values & count each word's frequency
+
+Pair words like "ab" and "ba" to form palindrome sides.
+
+Track self-palindromes ("aa", "cc") — only one can go in the middle if it’s unpaired.
+
+Basically, the formula is  Total Length of Palindrome = 4 * (Side Palindromes as they need to be on both sides) + 2(Center Palindrome, if any)
+
+Solution:
+class Solution {
+    public int longestPalindrome(String[] words) {
+        Map<String, Integer> count = new HashMap<>();
+        int length = 0;
+        boolean pCenter = false; //Center Palindrome checker
+
+        for (String word : words){
+            String reversed = "" + word.charAt(1) + word.charAt(0);
+            if(count.getOrDefault(reversed,0)>0){
+                length += 4;
+                count.put(reversed, count.get(reversed)-1);
+            } else{
+                count.put(word, count.getOrDefault(word,0)+1);
+            }
+
+        }
+        for(String word : count.keySet()){
+            if (word.charAt(0) == word.charAt(1) && count.get(word) > 0){
+                pCenter = true;
+                break;
+            }
+        }
+        if(pCenter) length += 2;
+        return length;
+    }
+}
