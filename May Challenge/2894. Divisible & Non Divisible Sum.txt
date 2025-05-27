@@ -1,0 +1,31 @@
+2894. Divisible & Non Divisible Sums Difference
+You are given two positive integers:
+
+n: the end of the range (starting from 1),
+
+m: a divisor.
+
+You are to:
+
+Add all numbers from 1 to n that are NOT divisible by m → call this num1.
+
+Add all numbers from 1 to n that ARE divisible by m → call this num2.
+
+Return the result: num1 - num2.
+
+Solution:
+class Solution {
+    public int differenceOfSums(int n, int m) {
+        int num1 = 0;
+        int num2 = 0;
+
+        for(int i = 1; i <= n; i++){
+            if(i % m == 0){
+                num2 += i;
+            } else {
+                num1 += i;
+            }
+        }
+        return num1 - num2;
+    }
+}
