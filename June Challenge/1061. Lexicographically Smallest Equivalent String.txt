@@ -1,0 +1,84 @@
+1061. Lexicographically Smallest Equivalent String
+
+You are given two strings of the same length s1 and s2 and a string baseStr.
+
+We say s1[i] and s2[i] are equivalent characters.
+
+For example, if s1 = "abc" and s2 = "cde", then we have 'a' == 'c', 'b' == 'd', and 'c' == 'e'.
+Equivalent characters follow the usual rules of any equivalence relation:
+
+Reflexivity: 'a' == 'a'.
+Symmetry: 'a' == 'b' implies 'b' == 'a'.
+Transitivity: 'a' == 'b' and 'b' == 'c' implies 'a' == 'c'.
+For example, given the equivalency information from s1 = "abc" and s2 = "cde", "acd" and "aab" are equivalent strings of baseStr = "eed", and "aab" is the lexicographically smallest equivalent string of baseStr.
+
+Return the lexicographically smallest equivalent string of baseStr by using the equivalency information from s1 and s2.
+
+
+When characters are considered equivalent (e.g., a = b and b = c), you can think of them as nodes in a graph where each character is connected to its equivalents.
+To find the smallest lexicographical representation of a character in a group, you can perform DFS to discover all connected characters and return the smallest among them.
+Change each character in baseStr to its smallest lexicographical equivalent character (i.e., smallest in dictionary order among its group).
+
+For example:
+
+If 'e' is equivalent to 'a', 'c', and 'e', you should replace 'e' with 'a'
+
+So for baseStr = "eed" → we replace:
+
+'e' → 'a'
+
+'e' → 'a'
+
+'d' → 'b'
+
+Result: "aab"
+
+Code:
+import java.util.*;
+
+class Solution {
+    public String smallestEquivalentString(String s1, String s2, String baseStr) {
+        Map<Character, List<Character>> adj = new HashMap<>();
+        int n = s1.length();
+
+        // Build the adjacency list
+        for (int i = 0; i < n; i++) {
+            char u = s1.charAt(i);
+            char v = s2.charAt(i);
+
+            adj.computeIfAbsent(u, k -> new ArrayList<>()).add(v);
+            adj.computeIfAbsent(v, k -> new ArrayList<>()).add(u);
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        for (char ch : baseStr.toCharArray()) {
+            boolean[] visited = new boolean[26];
+            char minChar = dfs(adj, ch, visited);
+            result.append(minChar);
+        }
+
+        return result.toString();
+    }
+
+    private char dfs(Map<Character, List<Character>> adj, char ch, boolean[] visited) {
+        visited[ch - 'a'] = true;
+        char minChar = ch;
+
+        for (char neighbor : adj.getOrDefault(ch, new ArrayList<>())) {
+            if (!visited[neighbor - 'a']) {
+                char candidate = dfs(adj, neighbor, visited);
+                if (candidate < minChar) {
+                    minChar = candidate;
+                }
+            }
+        }
+
+        return minChar;
+    }
+}
+
+
+
+Code:
+
