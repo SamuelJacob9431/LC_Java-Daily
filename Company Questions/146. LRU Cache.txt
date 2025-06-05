@@ -1,0 +1,85 @@
+Design a data structure that follows the constraints of a Least Recently Used (LRU) cache.
+
+Implement the LRUCache class:
+
+LRUCache(int capacity) Initialize the LRU cache with positive size capacity.
+int get(int key) Return the value of the key if the key exists, otherwise return -1.
+void put(int key, int value) Update the value of the key if the key exists. Otherwise, add the key-value pair to the cache. If the number of keys exceeds the capacity from this operation, evict the least recently used key.
+The functions get and put must each run in O(1) average time complexity.
+
+Code:
+import java.util.*;
+
+class LRUCache {
+
+    class Node {
+        int key, value;
+        Node prev, next;
+
+        public Node(int k, int v) {
+            key = k;
+            value = v;
+        }
+    }
+
+    private final int capacity;
+    private final Map<Integer, Node> map;
+    private final Node head, tail;
+
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        map = new HashMap<>();
+
+        // Dummy head and tail for easy manipulation
+        head = new Node(0, 0);
+        tail = new Node(0, 0);
+
+        head.next = tail;
+        tail.prev = head;
+    }
+
+    public int get(int key) {
+        if (map.containsKey(key)) {
+            Node node = map.get(key);
+            remove(node);        // Remove it from its current position
+            insertToFront(node); // Move it to the front (most recently used)
+            return node.value;
+        }
+        return -1;
+    }
+
+    public void put(int key, int value) {
+        if (map.containsKey(key)) {
+            remove(map.get(key)); // Remove existing node if it exists
+        }
+        if (map.size() == capacity) {
+            remove(tail.prev);    // Remove least recently used node
+        }
+
+        Node newNode = new Node(key, value);
+        insertToFront(newNode);   // Insert new node at front
+    }
+
+    private void remove(Node node) {
+        map.remove(node.key);          // Remove from map
+        node.prev.next = node.next;    // Bypass node
+        node.next.prev = node.prev;
+    }
+
+    private void insertToFront(Node node) {
+        map.put(node.key, node);      // Add to map
+        node.next = head.next;        // Insert node right after head
+        head.next.prev = node;
+
+        head.next = node;
+        node.prev = head;
+    }
+}
+
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * LRUCache obj = new LRUCache(capacity);
+ * int param_1 = obj.get(key);
+ * obj.put(key,value);
+ */
