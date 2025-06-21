@@ -1,0 +1,95 @@
+3085. Minimum Deletions to make String K special
+
+You are given a string word and an integer k.
+
+We consider word to be k-special if |freq(word[i]) - freq(word[j])| <= k for all indices i and j in the string.
+
+Here, freq(x) denotes the frequency of the character x in word, and |y| denotes the absolute value of y.
+
+Return the minimum number of characters you need to delete to make word k-special.
+
+Simple Example:
+Input: word = "aabcaba", k = 0
+
+Output: 3
+
+Explanation: We can make word 0-special by deleting 2 occurrences of "a" and 1 occurrence of "c". Therefore, word becomes equal to "baba" where freq('a') == freq('b') == 2.
+
+Time complexity: O(n) because other iterations are on a constant sized array
+Space complexity: O(1) - 26 sized array
+
+Java Code (Hash Map Approach) //Non Hash Map is a pain in the arse, Greedy Search:
+class Solution {
+    public int minimumDeletions(String word, int k) {
+        // 1. Count character frequencies
+        int[] freq = new int[26];
+        for (char c : word.toCharArray()) {
+            freq[c - 'a']++;
+        }
+
+        // 2. Extract non-zero freqs into updated[], track size
+        int[] updated = new int[26];
+        int size = 0;
+        for (int f : freq) {
+            if (f > 0) updated[size++] = f;
+        }
+
+        // 3. Sort only the used portion
+        Arrays.sort(updated, 0, size);
+
+        int min = Integer.MAX_VALUE;          // best answer so far
+        int totalSum = word.length();         // sum of all frequencies
+        int deletedLeftSum = 0;               // sum of freqs fully deleted on left
+        int sumInWindow = 0;                  // sum of freqs inside [i..j)
+        int j = 0;                            // right pointer for window
+
+        // 4. Slide the window start i across all frequencies
+        for (int i = 0; i < size; i++) {
+            int from = updated[i];
+            int to = from + k;
+
+            // Expand right pointer while freq ≤ to
+            while (j < size && updated[j] <= to) {
+                sumInWindow += updated[j++];
+            }
+
+            // Elements to the right of window: [j..size-1]
+            int countRight = size - j;
+            int sumRight = totalSum - sumInWindow;
+            // If we want them all to be at most `to`, we must delete:
+            // sumRight - (countRight * to)
+            int deletionsRight = sumRight - countRight * to;
+
+            // Total deletions = left deletions + right deletions
+            int totalDel = deletedLeftSum + deletionsRight;
+            min = Math.min(min, totalDel);
+
+            // Move window start forward by “deleting” updated[i] from window/total
+            totalSum -= updated[i];
+            deletedLeftSum += updated[i];
+            sumInWindow -= updated[i];
+        }
+
+        return min;
+    }
+}
+
+
+Greedy Search Python Code:
+class Solution:
+    def minimumDeletions(self, word: str, k: int) -> int:
+        freq = Counter(word)  # frequency Counting of each word 
+
+        def greedy(minF): #minF is the base frequency for comparision
+            rm = 0
+            for x in freq.values():
+                if x < minF:
+                    rm += x # Removes all characters with frequency < minF
+                elif x > minF + k:
+                    rm += x - minF - k # Removes characters such that the frequency obtained is equal to (minF + k)
+            return rm
+
+        ans = len(word)
+        for minF in freq.values():
+            ans = min(ans, greedy(minF))
+        return ans
