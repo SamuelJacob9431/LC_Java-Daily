@@ -1,0 +1,77 @@
+3304. Find the K-th Character in String Game I
+
+You are given an integer k.
+You need to return the k-th character of word after enough operations such that len(word) ≥ k.
+
+Assume k = 8
+
+Step 1:
+Each character → c + next(c)
+"a" → "ab"
+Now: word = ab
+
+Step 2:
+"ab" →
+
+'a' → 'ab'
+
+'b' → 'bc'
+→ word = abbc
+
+Step 3:
+"abbc" →
+
+'a' → 'ab'
+
+'b' → 'bc'
+
+'b' → 'bc'
+
+'c' → 'cd'
+→ word = abbcbccd
+
+
+Code:
+Java
+
+class Solution {
+    public char kthCharacter(int k) {
+        StringBuilder stringappend = new StringBuilder("a");
+        while (stringappend.length() < k){
+            int size = stringappend.length();
+            for(int i = 0; i < size; i ++){
+                stringappend. append((char) ('a' + ((stringappend.charAt(i) - 'a') + 1) % 26 ));
+            }
+        }
+
+        return stringappend.charAt(k - 1);
+    }
+}
+
+
+Better Runtime Complexity:
+
+class Solution {
+    public char kthCharacter(int k) {
+        return (char) ('a' + Integer.bitCount(k - 1));
+    }
+}
+
+
+Python Code:
+Best Runtime but Worst Case
+class Solution:
+    def kthCharacter(self, k: int) -> str:
+        return chr(ord('a') + (k - 1).bit_count())
+
+
+class Solution:
+    def kthCharacter(self, k: int) -> str:
+        sb = ['a']
+        while len(sb) < k:
+            size = len(sb)
+            for i in range(size):
+                next_char = chr(ord('a') + ((ord(sb[i]) - ord('a') + 1) % 26))
+                sb.append(next_char)
+        return sb[k - 1]
+        
