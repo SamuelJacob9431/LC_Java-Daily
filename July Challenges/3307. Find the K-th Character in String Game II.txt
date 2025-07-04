@@ -1,0 +1,97 @@
+3307. Find the K-th Character in String Game II
+
+Initial word: "a"
+
+You're given:
+
+An integer k: You want to find the k-th character (1-based index) after all operations are performed.
+
+An array operations: each element is either 0 or 1.
+
+You must simulate (or ideally mathematically model) the effect of each operation in order.
+
+Two Operations which can be performed:
+
+operations[i] == 0 → Type 0 Operation
+Append a copy of the current string to itself.
+
+If word = "abc", after this operation:
+
+word = "abcabc"
+
+So:
+ word → word + word
+
+operations[i] == 1 → Type 1 Operation
+Append to word a new string where each character is changed to its next alphabet letter.
+
+Examples:
+
+'a' → 'b', 'z' → 'a' (wrap around!)
+
+"c" → "cd"
+
+"zb" → "zbac" (z→a, b→c)
+
+So:
+word → word + next(word)
+Where next(word) is made by incrementing each character by 1 (with wraparound).
+
+
+Time & Space Complexity
+Time Complexity: O(n)
+n = length of operations
+
+We iterate through the operations once in reverse.
+
+Space Complexity: O(1)
+We use only a few integer variables, no extra data structures.
+
+
+Java Code:
+
+class Solution {
+    public char kthCharacter(long k, int[] operations) {
+        int shift = 0;
+        long len = 1;
+        int validOps = 0;
+
+        // Step 1: Compute how many operations affect length ≥ k
+        for (int op : operations) {
+            len *= 2;
+            validOps++;
+            if (len >= k) break;
+        }
+
+        // Step 2: Walk backwards and update shift
+        for (int i = validOps - 1; i >= 0; i--) {
+            len /= 2; // back to half
+            int op = operations[i];
+            if (k > len) {
+                k -= len;
+                if (op == 1) shift++;
+            }
+        }
+
+        // Final result after all shifts
+        return (char) ((('a' - 'a' + shift) % 26) + 'a');
+    }
+}
+
+
+Python Code:
+
+class Solution:
+    def kthCharacter(self, k: int, operations: List[int]) -> str:
+        n, i = 1, 0
+        while n < k:
+            n *= 2
+            i += 1
+        d = 0
+        while n > 1:
+            if k > n // 2:
+                k -= n // 2
+                d += operations[i - 1]
+            n //= 2
+            i -= 1
+        return chr(d % 26 + ord("a"))
