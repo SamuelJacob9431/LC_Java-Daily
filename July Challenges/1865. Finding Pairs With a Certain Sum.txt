@@ -1,0 +1,88 @@
+1865. Finding Pairs With a Certain Sum
+
+You are given two integer arrays nums1 and nums2, and you need to design a data structure (FindSumPairs) that supports two types of operations efficiently:
+
+1) Add Operation:
+
+add(index, val) → Add a positive integer val to nums2[index].
+
+This changes the element at a specific index in nums2.
+
+2) Count Operation:
+
+count(tot) → Return the number of pairs (i, j) such that:
+
+nums1[i] + nums2[j] == tot
+
+Observations:
+nums1 is static → we can preprocess it once.
+
+nums2 is dynamic (mutable) → we need to track frequencies.
+
+The count(tot) operation becomes faster if we use a frequency map for nums2.
+
+Python Code:
+
+self refers to the current object being created or accessed.
+
+It lets you store variables inside the object so you can access them later in other methods (like add() or count()).
+
+Without self, each method would "forget" values as soon as it ends.
+
+
+
+class FindSumPairs:
+
+    def __init__(self, nums1: List[int], nums2: List[int]): #Constructor
+        self.nums1=sorted(nums1) #storing sorted copy of nums1 for Binary Search
+        self.n=len(nums1) #Storing length of nums1 for easy reuse
+        self.nums2=nums2 #Storing unsorted nums2
+        self.freq=Counter(nums2) #Using Counter as a dictionary like object where keys are elements of nums2, & value is the frequency of appearance of the elements
+        self.xMax=max(self.freq.keys()) #Largest number stored
+
+    def add(self, index: int, val: int) -> None:
+        x=self.nums2[index] #Gets current value at index in nums2
+        self.freq[x]-=1 #Decrease frequency count of old value by 1
+        self.nums2[index]+=val #Adds val to nums2[index]
+        self.freq[x+val]+=1 #Increase frequency of new value
+        if x+val>self.xMax:
+            self.xMax=x+val #Checks if the new value obtained is the largest & then updates self.xMax as required
+
+    def count(self, tot: int) -> int:
+        cnt=0 #Initialized & stores the counter's total number of matching pairs
+        i0=bisect.bisect_left(self.nums1, tot-self.xMax) #Binary Search to skip elements too small to form a pair
+        for i in range(i0, self.n): #Starts iterating from i0 to end of nums1
+            y=self.nums1[i] #Gets current value from nums1
+            if y>=tot: break #Breaks the loop if nums2[j] doesn't exist.
+            cnt+=self.freq[tot-y] #Gives us count of such j's & adds to the Counter cnt.
+        return cnt
+        
+# Your FindSumPairs object will be instantiated and called as such:
+# obj = FindSumPairs(nums1, nums2)
+# obj.add(index,val)
+# param_2 = obj.count(tot)
+
+Java Code:
+
+class FindSumPairs {
+    int[] n1, n2;
+    Map<Integer, Integer> m = new HashMap<>();
+
+    public FindSumPairs(int[] nums1, int[] nums2) {
+        n1 = nums1;
+        n2 = nums2;
+        for (int x : n2) m.put(x, m.getOrDefault(x, 0) + 1);
+    }
+
+    public void add(int i, int v) {
+        m.put(n2[i], m.get(n2[i]) - 1);
+        n2[i] += v;
+        m.put(n2[i], m.getOrDefault(n2[i], 0) + 1);
+    }
+
+    public int count(int t) {
+        int c = 0;
+        for (int x : n1) c += m.getOrDefault(t - x, 0);
+        return c;
+    }
+}
