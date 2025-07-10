@@ -1,0 +1,58 @@
+3440. Reschedule Meetings for Maximum Free Time II
+
+We want to find the maximum possible continuous free time in an event schedule by possibly removing one meeting.
+The idea is to look at gaps between meetings and consider the scenario of removing a meeting to merge adjacent gaps.
+We also consider if the removed meeting can fit in another free slot, keeping the total time unchanged.
+
+Calculate all gaps between meetings including:
+
+Before the first meeting,
+Between each consecutive meeting,
+After the last meeting.
+Precompute the maximum gap to the right of each position to enable checking if a meeting can be rescheduled.
+
+For each potential meeting to remove:
+
+Calculate the combined gap if that meeting is removed.
+Check if the meeting can fit into any previously seen left or upcoming right gap.
+Track the maximum such free time obtained.
+
+
+Java Code:
+
+class Solution {
+    public int maxFreeTime(int eventTime, int[] startTime, int[] endTime) {
+        int n = startTime.length;
+        if (n == 0) return eventTime;
+
+        int[] gaps = new int[n + 1];
+        gaps[0] = startTime[0];
+
+        for (int i = 1; i < n; i++) {
+            gaps[i] = startTime[i] - endTime[i - 1];
+        }
+        gaps[n] = eventTime - endTime[n - 1];
+
+        int[] largestRight = new int[n + 1];
+        for (int i = n - 1; i >= 0; i--) {
+            largestRight[i] = Math.max(largestRight[i + 1], gaps[i + 1]);
+        }
+
+        int maxFree = 0, largestLeft = 0;
+        for (int i = 1; i <= n; i++) {
+            int duration = endTime[i - 1] - startTime[i - 1];
+            boolean canFitLeft = largestLeft >= duration;
+            boolean canFitRight = largestRight[i] >= duration;
+
+            if (canFitLeft || canFitRight) {
+                int merged = gaps[i - 1] + gaps[i] + duration;
+                maxFree = Math.max(maxFree, merged);
+            }
+
+            maxFree = Math.max(maxFree, gaps[i - 1] + gaps[i]);
+            largestLeft = Math.max(largestLeft, gaps[i - 1]);
+        }
+
+        return maxFree;
+    }
+}

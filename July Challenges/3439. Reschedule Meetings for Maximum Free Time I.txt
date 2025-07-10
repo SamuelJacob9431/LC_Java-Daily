@@ -1,0 +1,61 @@
+3439. Reschedule Meetings for Maximum Free Time I
+
+You are given an integer eventTime denoting the duration of an event, where the event occurs from time t = 0 to time t = eventTime.
+
+You are also given two integer arrays startTime and endTime, each of length n. These represent the start and end time of n non-overlapping meetings, where the ith meeting occurs during the time [startTime[i], endTime[i]].
+
+You can reschedule at most k meetings by moving their start time while maintaining the same duration, to maximize the longest continuous period of free time during the event.
+
+The relative order of all the meetings should stay the same and they should remain non-overlapping.
+
+Return the maximum amount of free time possible after rearranging the meetings.
+
+Note that the meetings can not be rescheduled to a time outside the event.
+
+Explanation (non confusing):
+You are given:
+
+eventTime: the total length of the event, from time 0 to eventTime.
+
+Two arrays:
+
+startTime[i]: when meeting i starts
+
+endTime[i]: when meeting i ends
+
+A number k: the maximum number of meetings you are allowed to reschedule.
+
+You can shift a meeting earlier or later, while keeping its duration the same, to create bigger gaps (free time) between meetings.
+
+Rules:
+You can reschedule at most k meetings.
+
+You cannot change the order of the meetings (i.e., if Meeting A came before Meeting B originally, it must stay that way).
+
+Meetings must not overlap after rescheduling.
+
+No meeting can be scheduled outside the [0, eventTime] range.
+
+Your aim is to maximize the longest free time (gap) between meetings within the event duration, by shifting up to k meetings smartly.
+
+Code:
+class Solution {
+    public int maxFreeTime(int eventTime, int k, int[] startTime, int[] endTime) {
+        int count = startTime.length; //Number of meetings bro
+        int[] prefixSum = new int[count + 1]; //This will store the total meeting durations of first i meetings
+        int maxFree = 0; // Maximum continous frree time found
+
+        for(int i = 0; i < count; i++){
+            prefixSum[i + 1] = prefixSum[i] + endTime[i] - startTime[i]; //basically building up the total time occupied by meetings from 0 to i
+        }
+        //sliding window, i = end index of current window of size k
+        for(int i = k - 1; i < count; i++){
+            int occupied = prefixSum[i + 1] - prefixSum[i - k + 1];//occupied is basically the total time taken by the current windows of k meetings
+            int windowEnd = (i == count - 1) ? eventTime : startTime[i + 1];
+            int windowStart = (i == k - 1) ? 0 : endTime[i - k];
+            int freeTime = windowEnd - windowStart - occupied; //gives free time left
+            maxFree = Math.max(maxFree, freeTime);
+        }
+        return maxFree;
+    }
+}
