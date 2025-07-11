@@ -1,0 +1,131 @@
+2402. Meeting Rooms III
+
+You're given:
+
+An integer n: number of rooms labeled from 0 to n-1.
+
+A list of meetings: each meeting is [start, end) meaning it starts at time start and ends before time end.
+
+ Rules for Allocating Rooms:
+Always assign the meeting to the available room with the smallest number.
+
+If no room is available at the meeting’s start time:
+
+Delay the meeting until a room becomes free.
+
+The duration stays the same, but the start time changes.
+
+Choose the room that becomes free earliest.
+
+If multiple rooms become free at the same time, pick the lowest-numbered room.
+
+Keep track of how many meetings each room hosts.
+
+
+Let's walk through a small example:
+
+Input:
+n = 2
+meetings = [[0, 10], [1, 5], [2, 7], [3, 4]]
+Step-by-step:
+Room 0 gets [0, 10) → busy till time 10
+
+Room 1 is available at time 1 → gets [1, 5) → busy till 5
+
+At time 2:
+
+Room 0 is still busy (until 10)
+
+Room 1 is busy until 5 → so meeting [2,7) is delayed until time 5 → now becomes [5,10) in room 1
+
+At time 3:
+
+No rooms free → [3,4) is delayed
+
+First available is room 1 at time 10 → [3,4) has 1 unit duration → scheduled as [10,11) in room 1
+
+Final room usage:
+Room 0: 1 meeting
+
+Room 1: 3 meetings
+
+Returns 1 (room with most meetings)
+
+
+Java Code:
+
+import java.util.*;
+
+class Solution {
+    public int mostBooked(int n, int[][] meetings) {
+        Arrays.sort(meetings, Comparator.comparingInt(a -> a[0]));
+
+        PriorityQueue<Integer> free = new PriorityQueue<>();
+        for (int i = 0; i < n; ++i) free.offer(i);
+
+        PriorityQueue<long[]> busy =
+            new PriorityQueue<>((a, b) -> a[0] == b[0] ? Long.compare(a[1], b[1])
+                                                        : Long.compare(a[0], b[0]));
+
+        int[] cnt = new int[n];
+
+        for (int[] m : meetings) {
+            long start = m[0], end = m[1];
+
+            while (!busy.isEmpty() && busy.peek()[0] <= start)
+                free.offer((int) busy.poll()[1]);
+
+            int room;
+            long newEnd;
+            if (!free.isEmpty()) {
+                room = free.poll();
+                newEnd = end;
+            } else {
+                long[] e = busy.poll();
+                room = (int) e[1];
+                newEnd = e[0] + (end - start);
+            }
+            busy.offer(new long[] {newEnd, room});
+            cnt[room]++;
+        }
+
+        int best = 0;
+        for (int i = 1; i < n; ++i)
+            if (cnt[i] > cnt[best]) best = i;
+        return best;
+    }
+}
+
+Python:
+
+import heapq
+from typing import List
+
+class Solution:
+    def mostBooked(self, n: int, meetings: List[List[int]]) -> int:
+        meetings.sort()
+        free = list(range(n))          # min-heap of available rooms
+        heapq.heapify(free)
+
+        busy = []                      # min-heap: (endTime, room)
+        count = [0] * n                # count of meetings per room
+
+        for s, e in meetings:
+            # Step 1: Free up rooms that are now available
+            while busy and busy[0][0] <= s:
+                _, r = heapq.heappop(busy)
+                heapq.heappush(free, r)
+
+            # Step 2: Assign a room
+            if free:
+                r = heapq.heappop(free)       # pick lowest-numbered free room
+                new_end = e                   # meeting goes as planned
+            else:
+                end_time, r = heapq.heappop(busy)
+                new_end = end_time + (e - s)  # delay meeting to end_time
+            heapq.heappush(busy, (new_end, r))
+            count[r] += 1                     # record usage
+
+        # Step 3: Return the room with max meetings
+        return max(range(n), key=count.__getitem__)
+
