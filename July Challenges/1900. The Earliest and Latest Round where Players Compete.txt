@@ -1,0 +1,124 @@
+1900. The Earliest and Latest Rounds Where Players Compete
+
+Step 1 Understand the Game Format
+
+This is a single-elimination tournament.
+In each round
+The first player competes with last, second with second-last
+If there's an odd number of players
+The middle player automatically advances.
+The players firstPlayer and secondPlayer are the strongest
+They never lose unless they face each other.
+Step 2 Handle Base Case — Do They Meet in This Round?
+
+In every round
+check if firstPlayer and secondPlayer are facing each other.
+They face each other if firstPlayer + secondPlayer == n + 1
+They're paired from opposite ends.
+If yes:
+return {1, 1}
+They meet in round 1 — both earliest and latest.
+Step 3 Normalize the Players’ Position
+
+To make things easier, always keep smaller-numbered player on left.
+So set
+p1 = min(firstPlayer, secondPlayer)
+p2 = max(firstPlayer, secondPlayer).
+Step 4 Divide Players into Zones
+
+Now, imagine the current lineup of players:
+a = number of players before p1
+b = number of players between p1 & p2
+c = number of players after p2
+Step 5 Simulate All Valid Matchups
+
+Since all players,
+except p1 and p2 can win or lose arbitrarily, you simulate all combinations of players who can advance from zones a, b, c.
+For each configuration of survivors from current, recursively calculate:
+What round p1 and p2 will meet in the next reduced round
+tournament size becomes (n + 1) / 2.
+You map p1 and p2's new positions in the next round based on how many other matches happen before them.
+Step 6 Track the Minimum and Maximum Rounds
+
+In each recursive simulation:
+Keep track of the minimum round, earliest time they could meet.
+Also track maximum round, latest time they could possibly meet.
+Add +1 to each recursive result, since you move one round deeper.
+Step 7 Return the Final Answer
+
+After exploring all combinations
+Return {minRound, maxRound}
+the earliest & latest round two strong players could face off.
+
+Java Code:
+public class Solution 
+{
+    public int[] earliestAndLatest(int n, int firstPlayer, int secondPlayer) 
+    {
+        // Step 1: Normalize players (ensure firstPlayer is smaller)
+        int p1 = Math.min(firstPlayer, secondPlayer);
+        int p2 = Math.max(firstPlayer, secondPlayer);
+
+        // Step 2: Check base case — do they meet this round?
+        if (p1 + p2 == n + 1) 
+        {
+            return new int[]{1, 1};
+        }
+
+        // Step 3: Small size base case
+        if (n <= 4) 
+        {
+            return new int[]{2, 2};
+        }
+
+        int m = (n + 1) / 2;
+        int minRound = Integer.MAX_VALUE;
+        int maxRound = Integer.MIN_VALUE;
+
+        // Step 4: Use symmetry to simplify
+        if (p1 - 1 > n - p2) 
+        {
+            int t = n + 1 - p1;
+            p1 = n + 1 - p2;
+            p2 = t;
+        }
+
+        // Step 5: Simulate all possible outcomes
+        if (p2 * 2 <= n + 1) 
+        {
+            int a = p1 - 1;
+            int b = p2 - p1 - 1;
+
+            for (int i = 0; i <= a; i++) {
+
+                for (int j = 0; j <= b; j++) 
+                {
+                    int[] next = earliestAndLatest(m, i + 1, i + j + 2);
+                    minRound = Math.min(minRound, next[0] + 1);
+                    maxRound = Math.max(maxRound, next[1] + 1);
+                }
+            }
+        } 
+        else 
+        {
+            int p4 = n + 1 - p2;
+            int a = p1 - 1;
+            int b = p4 - p1 - 1;
+            int c = p2 - p4 - 1;
+
+            for (int i = 0; i <= a; i++) 
+            {
+                for (int j = 0; j <= b; j++) 
+                {
+                    int offset = i + j + 1 + (c + 1) / 2 + 1;
+                    int[] next = earliestAndLatest(m, i + 1, offset);
+                    minRound = Math.min(minRound, next[0] + 1);
+                    maxRound = Math.max(maxRound, next[1] + 1);
+                }
+            }
+        }
+
+        // Step 6: Return final earliest and latest round
+        return new int[]{minRound, maxRound};
+    }
+}
