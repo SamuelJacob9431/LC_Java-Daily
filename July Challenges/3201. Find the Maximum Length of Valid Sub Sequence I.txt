@@ -1,0 +1,101 @@
+3201. Find the Maximum Length of Valid Subsequence I
+You are given an integer array nums.
+A subsequence sub of nums with length x is called valid if it satisfies:
+
+(sub[0] + sub[1]) % 2 == (sub[1] + sub[2]) % 2 == ... == (sub[x - 2] + sub[x - 1]) % 2.
+Return the length of the longest valid subsequence of nums.
+
+A subsequence is an array that can be derived from another array by deleting some or no elements without changing the order of the remaining elements.
+You're given an array of integers nums.
+You need to find the longest subsequence such that the sum of every two adjacent elements has the same parity — either all sums are even or all sums are odd.
+
+ Definitions:
+Even + Even = Even ✅
+
+Odd + Odd = Even ✅
+
+Odd + Even = Odd ✅
+
+Even + Odd = Odd ✅
+
+So for the sums to be consistently even, the subsequence must consist of same parity elements.
+For the sums to be consistently odd, the subsequence must be alternating even and odd elements.
+
+We must explore both strategies:
+
+1️⃣ Same-Parity Subsequence
+👉 Valid when all adjacent elements have same parity
+✔️ All Even or All Odd
+➡️ Just count the max number of same-parity elements
+
+Example:
+Input: [1, 2, 4, 6]
+Valid Same-Parity Subseq: [2, 4, 6] → All even
+All sums = even
+
+2️⃣ Alternating-Parity Subsequence
+👉 Valid when parity alternates, i.e., odd → even → odd...
+✔️ All adjacent sums will be odd
+➡️ We use dynamic programming here
+
+Build longest sequence where:
+
+Even follows odd, or
+
+Odd follows even
+
+Example:
+Input: [1, 2, 1, 2]
+Valid Alternating Subseq: [1, 2, 1, 2]
+All sums = odd (1+2, 2+1, 1+2)
+
+
+Java Code:
+
+class Solution {
+    public int maximumLength(int[] nums) {
+        int countEven = 0;
+        int countOdd = 0;
+        for (int num : nums){
+            if(num % 2 == 0) {
+                countEven++;
+            }else{
+                countOdd++;
+            }
+        }
+
+        int evenDp = 0;
+        int oddDp = 0;
+
+        for ( int num : nums){
+            if (num % 2 == 0){
+                evenDp = Math.max(evenDp, oddDp + 1);
+            }else{
+                oddDp = Math.max(oddDp, evenDp + 1);
+            }
+        }
+
+        return Math.max(Math.max(countEven, countOdd), Math.max(evenDp, oddDp));
+    }
+}
+
+Python Code:
+ class Solution:
+    def maximumLength(self, nums: List[int]) -> int:
+        count_even = 0
+        count_odd = 0
+        for num in nums:
+            if num % 2 == 0:
+                count_even += 1
+            else:
+                count_odd += 1
+        
+        even_dp = 0
+        odd_dp = 0
+        for num in nums:
+            if num % 2 == 0:
+                even_dp = max(even_dp, odd_dp + 1)
+            else:
+                odd_dp = max(odd_dp, even_dp + 1)
+        
+        return max(count_even, count_odd, even_dp, odd_dp)

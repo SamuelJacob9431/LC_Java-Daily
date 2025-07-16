@@ -1,0 +1,83 @@
+2410. Maximum Matching of Players With Trainers
+You are given:
+
+A list of players with their abilities.
+
+A list of trainers with their training capacities.
+
+A player can only match with a trainer if:
+player's ability <= trainer's capacity
+
+Also:
+
+Each player can be matched with only one trainer, and
+
+Each trainer can be matched with only one player.
+
+Find the maximum number of such valid matches you can make.
+
+players  = [4, 7, 9]
+trainers = [8, 2, 5, 8]
+We want to pair as many players and trainers as possible where:
+
+4 ≤ trainer’s capacity → ✅ Can match with 5, 8
+
+7 ≤ trainer’s capacity → ✅ Can match with 8
+
+9 ≤ trainer’s capacity → ❌ No trainer with capacity ≥ 9
+
+Let’s match:
+
+Match player 4 with trainer 5 ✅
+
+Match player 7 with trainer 8 ✅
+
+Player 9 can't be matched ❌
+
+
+Java Code:
+class Solution {
+    public int matchPlayersAndTrainers(int[] players, int[] trainers) {
+        //Sorting the Arrays properly 
+        Arrays.sort(players);
+        Arrays.sort(trainers);
+
+        //Pointers i for players, j for trainers
+        int count = 0;
+        int i = 0;
+        int j = 0;
+        
+        //Initial condition where one can match both the players & trainers as long as they satisyf this condition
+        while ( i < players.length && j < trainers.length){
+            if(players[i] <= trainers[j]){
+                //Match has been found, update & move the pointers
+                count++;
+                i++;
+                j++;
+            }else{
+                //Current Trainer cannot train this player, try the next trainer available in the list
+                j++;
+            }
+        }
+
+        return count;
+    }
+}
+
+
+Python Code:
+
+class Solution:
+    def matchPlayersAndTrainers(self, players: List[int], trainers: List[int]) -> int:
+        players.sort()
+        trainers.sort()
+        m, match, j = len(trainers), 0, 0
+        
+        for i, pi in enumerate(players):
+            while j < m and trainers[j] < pi:
+                j += 1
+            if j < m:
+                j += 1
+                match += 1
+
+        return match
